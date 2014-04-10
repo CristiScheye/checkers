@@ -1,7 +1,6 @@
-require './board'
-
 class Piece
   attr_accessor :color, :pos
+  attr_reader :board
 
   def initialize(board, color, pos)
     @board, @color, @pos = board, color, pos
@@ -14,13 +13,13 @@ class Piece
 
   def valid_moves
     possible_moves = (jumps + slides).compact
-    possible_moves.select { |coord| @board.on_board?(coord) && @board.empty?(coord)}
+    possible_moves.select { |coord| board.on_board?(coord) && board.empty?(coord)}
   end
 
   def jumps
     move_dirs(:jump).map do |coord|
       immediate_diag = [coord[0]/2 + pos[0], coord[1]/2 + pos[1]]
-      next if @board.empty?(immediate_diag)
+      next if board.empty?(immediate_diag)
 
       [coord[0] + pos[0], coord[1] + pos[1]]
     end
