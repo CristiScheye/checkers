@@ -73,4 +73,8 @@ class Piece
   def reaches_end
     color == :red ? pos[0] == 7 : pos[0] == 0
   end
+
+  def render
+    king? ? "\u265A" : "\u25CF"
+  end
 end
