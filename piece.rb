@@ -1,3 +1,5 @@
+require './board'
+
 class Piece
   attr_accessor :color, :pos
 
@@ -10,51 +12,58 @@ class Piece
     @king
   end
 
-  def valid_slide?(new_pos)
-    i, j = pos
+  def valid_moves
+    possible_moves = (jumps + slides).compact
+    possible_moves.select { |coord| @board.on_board?(coord) && @board.empty?(coord)}
+  end
 
-    pos_slides = slide_dirs.map do |coord|
-      slide = [coord[0] + i, coord[1] + j]
-      slide if on_board?(slide)
+  def jumps
+    move_dirs(:jump).map do |coord|
+      immediate_diag = [coord[0]/2 + pos[0], coord[1]/2 + pos[1]]
+      next if @board.empty?(immediate_diag)
+
+      [coord[0] + pos[0], coord[1] + pos[1]]
     end
-
-    board.empty?(new_pos) && pos_slides.include?(new_pos)
   end
 
-  def valid_jump?
-    #board cannot be empty to the diagonal
+  def slides
+    slide_moves = move_dirs(:slide).map do |coord|
+      [coord[0] + pos[0], coord[1] + pos[1]]
+    end
   end
 
-  def slide_dirs
-    king? ? forward_diags + backward_diags : forward_diags
-  end
-
-  def forward_diags
-    if color == :red
-      [ [1, -1],
-        [1,  1] ]
+  def move_dirs(move_type)
+    if king?
+      forward_diags(move_type) + backward_diags(move_type)
     else
-      [ [-1,-1],
-        [-1, 1]]
+      forward_diags(move_type)
     end
   end
 
-  def backward_diags
+  def forward_diags(move_type)
+    dist = (move_type == :slide ? 1 : 2)
     if color == :red
-      [ [-1,-1],
-        [-1, 1]]
+      [ [dist, -dist],
+        [dist,  dist] ]
     else
-      [ [1, -1],
-        [1,  1] ]
+      [ [-dist,-dist],
+        [-dist, dist]]
     end
   end
 
-  def on_board?(coord)
-    coord.all? { |c| c.between?(0,7) }
+  def backward_diags(move_type)
+    dist = (move_type == :slide ? 1 : 2)
+    if color == :red
+      [ [-dist,-dist],
+        [-dist, dist]]
+    else
+      [ [dist, -dist],
+        [dist,  dist] ]
+    end
+  end
+
+  def inspect
+    status = (king? ? 'king' : 'pawn')
+    "#{color} #{status} at #{pos}"
   end
 end
-
-
-p = Piece.new('board', :red, [0,0])
-p p.valid_slide?([1,1])
-p p.valid_slide?([3,3])
