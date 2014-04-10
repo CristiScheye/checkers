@@ -1,4 +1,6 @@
 require 'debugger'
+require 'colorize'
+
 require './piece'
 
 class Board
@@ -105,6 +107,42 @@ class Board
     self[piece.pos] = nil
   end
 
+  def render
+    puts "   A  B  C  D  E  F  G  H "
+    rows.each_with_index do |row,row_index|
+      row_squares = row.map.with_index do |piece, col_index|
+        square_color = ((row_index + col_index).even? ? :light_white : :black)
+        if piece.nil?
+          square_char = '   '.colorize(background: square_color)
+        else
+          square_char = " #{piece.render} ".colorize(piece.color).bold.colorize(background: square_color)
+        end
+      end
+      row_str = row_squares.join
+      puts "#{row_index + 1} #{row_str} #{row_index + 1}"
+    end
+    puts "   A  B  C  D  E  F  G  H "
+  end
+
+  def over?
+    winning_color || draw?
+  end
+
+  def winning_color
+    winning_color = all_pieces.first.color
+    all_pieces.each do |piece|
+      if only_color != piece.color
+        winning_color = nil
+        break
+      end
+    end
+    winning_color
+  end
+
+  def draw?
+    all_pieces.all? { |piece| piece.valid_moves.empty? }
+  end
+
   private
 
   def set_pieces
@@ -146,14 +184,16 @@ end
 
 
 b = Board.new
+b.render
 sliding_move = [[2,2],[3,3]]
 b.perform_moves(sliding_move)
-
-p b[[2,2]]
-p b[[3,3]]
+b.render
+# p b[[2,2]]
+# p b[[3,3]]
 
 double_skip = [[0,0],[2,2],[4,4]]
 b.perform_moves(double_skip)
+b.render
 
-p b[[0,0]]
-p b[[4,4]]
+# p b[[0,0]]
+# p b[[4,4]]
