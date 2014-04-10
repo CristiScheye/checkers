@@ -65,4 +65,12 @@ class Piece
     status = (king? ? 'king' : 'pawn')
     "#{color} #{status} at #{pos}"
   end
+
+  def king_me!
+    self.king = true
+  end
+
+  def reaches_end
+    color == :red ? pos[0] == 7 : pos[0] == 0
+  end
 end
