@@ -25,22 +25,26 @@ class Checkers
 
     puts "Chess!\n\n"
     puts "To move a piece, enter the coordinates of the starting
-    square and the ending square. If you want to make multiple
-    jumping moves, enter coordinates of each square in sequence."
+square and the ending square. If you want to make multiple
+jumping moves, enter coordinates of each square in sequence."
+    board.render
+    puts "Press enter to play"
+    gets
 
     current_player = player1
 
     until board.over?
+      system "clear"
+      puts "Chess! : #{current_player.name}'s turn (#{current_player.color})\n\n"
       board.render
-      puts "#{current_player.name}'s turn"
+      puts "\n\n"
 
       begin
         move_seq = current_player.get_move
         moves = format_moves_arr(move_seq)
         board.perform_moves(moves, current_player.color)
       rescue => e
-        puts e.message
-        puts e.backtrace
+        puts e.message.colorize(:red)
         puts 'Try another move'
         retry
       end

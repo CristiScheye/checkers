@@ -2,9 +2,8 @@ class Piece
   attr_accessor :color, :pos
   attr_reader :board
 
-  def initialize(board, color, pos)
-    @board, @color, @pos = board, color, pos
-    @king = false
+  def initialize(board, color, pos, king = false)
+    @board, @color, @pos, @king = board, color, pos, king
   end
 
   def king?
