@@ -44,18 +44,11 @@ class Board
     dup_board
   end
 
-  def perform_moves(move_seq)
-    unless valid_move_seq?(move_seq)
-      raise 'invalid move'
+  def perform_moves(move_seq, player_color)
+    unless valid_move_seq?(move_seq, player_color)
+      raise "Nope, can't make that move"
     end
     perform_moves!(move_seq)
-  end
-
-  def perform_moves!(move_seq)
-    (move_seq.size - 1).times do |index|
-      old_pos, new_pos = move_seq[index], move_seq[index + 1]
-      perform_move!(old_pos, new_pos)
-    end
   end
 
   def perform_move!(old_pos, new_pos)
@@ -66,17 +59,13 @@ class Board
     end
   end
 
-  def valid_move_seq?(move_seq)
+  def valid_move_seq?(move_seq, player_color)
     dup_board = self.dup
-
-    if move_seq.size < 2
-      return false
-    end
 
     (move_seq.size - 1).times do |index|
       old_pos, new_pos = move_seq[index], move_seq[index + 1]
 
-      if dup_board.valid_move?(old_pos, new_pos)
+      if dup_board.valid_move?(old_pos, new_pos, player_color)
         dup_board.perform_move!(old_pos, new_pos)
       else
         return false
@@ -89,9 +78,9 @@ class Board
     self[pos].nil?
   end
 
-  def valid_move?(old_pos, new_pos)
+  def valid_move?(old_pos, new_pos, player_color)
     piece = self[old_pos]
-    piece.valid_moves.include?(new_pos)
+    piece.color == player_color && piece.valid_moves.include?(new_pos)
   end
 
   def on_board?(coord)
@@ -131,7 +120,7 @@ class Board
   def winning_color
     winning_color = all_pieces.first.color
     all_pieces.each do |piece|
-      if only_color != piece.color
+      if winning_color != piece.color
         winning_color = nil
         break
       end
@@ -165,6 +154,7 @@ class Board
     self[new_pos] = piece
     self[old_pos] = nil
     piece.pos = new_pos
+    piece.king_me! if piece.reaches_end
   end
 
   def perform_slide(old_pos, new_pos)
@@ -177,23 +167,14 @@ class Board
     place_piece(old_pos, new_pos)
 
     if piece_between(old_pos, new_pos).color != piece.color
-      capture(piece_between)
+      capture(piece_between(old_pos, new_pos))
+    end
+  end
+
+  def perform_moves!(move_seq)
+    (move_seq.size - 1).times do |index|
+      old_pos, new_pos = move_seq[index], move_seq[index + 1]
+      perform_move!(old_pos, new_pos)
     end
   end
 end
-
-
-b = Board.new
-b.render
-sliding_move = [[2,2],[3,3]]
-b.perform_moves(sliding_move)
-b.render
-# p b[[2,2]]
-# p b[[3,3]]
-
-double_skip = [[0,0],[2,2],[4,4]]
-b.perform_moves(double_skip)
-b.render
-
-# p b[[0,0]]
-# p b[[4,4]]

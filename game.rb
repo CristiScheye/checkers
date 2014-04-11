@@ -2,7 +2,7 @@ require './board'
 require './player'
 
 class Checkers
-  attr_reader :player1, :player2
+  attr_reader :player1, :player2, :board
 
   LETTER_COORDS = {
     'a' => 0,
@@ -33,15 +33,19 @@ class Checkers
     until board.over?
       board.render
       puts "#{current_player.name}'s turn"
+
       begin
         move_seq = current_player.get_move
         moves = format_moves_arr(move_seq)
-        board.perform_move(move_seq)
-      rescue
+        board.perform_moves(moves, current_player.color)
+      rescue => e
+        puts e.message
+        puts e.backtrace
+        puts 'Try another move'
         retry
       end
 
-      toggle_player(current_player)
+      current_player = toggle_player(current_player)
     end
 
     if board.draw?
@@ -58,24 +62,30 @@ class Checkers
     current_player == player1 ? player2 : player1
   end
 
-
   def format_moves_arr(move_str)
     move_str = move_str.gsub(' ', '')
     moves = move_str.split(',') # => [a3, b4]
+
+    if moves.size < 2
+      raise 'must provide at least two coordinates'
+    end
+
     moves.map do |move|
-      char, num = move.split('') # => ['a', '3']
 
       if move.size != 2
         raise 'a coordinate must be two characters long (e.g. A3)'
-      elsif !num.between(0,7)
-        raise 'number end with a number be between 1 and 8 (e.g. A3)'
-      elsif !(char =~ /^[A-Ha-h]/)
-        raise 'must start with a letter A-H (e.g. A3)'
+      elsif !(move =~ /^[A-Ha-h][1-8]$/)
+        raise 'must be formatted with a letter (A-H) and number (1-8) (e.g. A3)'
       end
 
+      char, num = move.split('') # => ['a', '3']
       row = num.to_i - 1
       col = LETTER_COORDS[char.downcase]
       [row, col]
     end
   end
+end
+
+if $PROGRAM_NAME == __FILE__
+  Checkers.new.play
 end

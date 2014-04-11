@@ -67,7 +67,7 @@ class Piece
   end
 
   def king_me!
-    self.king = true
+    @king = true
   end
 
   def reaches_end
@@ -75,6 +75,6 @@ class Piece
   end
 
   def render
-    king? ? "\u265A" : "\u25CF"
+    king? ? "K" : "\u25CF"
   end
 end
